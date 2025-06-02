@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Social Media{% endblock %}</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Lobster&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Roboto', sans-serif; }
+    .instagram-logo { font-family: 'Lobster', cursive; }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900 dark:bg-[#121212] dark:text-white transition-colors duration-300">
+  <div class="flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-[#121212] fixed top-0 left-0 h-screen border-r border-gray-200 dark:border-[#333333] p-6 z-50 flex flex-col justify-between">
+      
+      <!-- Top: Logo + Nav -->
+      <div>
+        <h1 class="instagram-logo text-4xl mb-8 text-black dark:text-white">Instagram</h1>
+        <nav class="space-y-4">
+          <a href="{% url 'index' %}" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Home">
+            <img src="{% static 'assets1/icons/home.svg' %}" alt="Home" class="w-5 h-5">
+            <span>Home</span>
+          </a>
+
+          <a href="{% url 'search_users' %}" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Search Users">
+            <img src="{% static 'assets1/icons/search.svg' %}" alt="Search" class="w-5 h-5">
+            <span>Search</span>
+          </a>
+
+          <a href="#" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Explore">
+            <img src="{% static 'assets1/icons/explore.svg' %}" alt="Explore" class="w-5 h-5">
+            <span>Explore</span>
+          </a>
+
+          <a href="#" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Reels">
+            <img src="{% static 'assets1/icons/reels.svg' %}" alt="Reels" class="w-5 h-5">
+            <span>Reels</span>
+          </a>
+
+          <a href="#" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Messages">
+            <img src="{% static 'assets1/icons/messenger.svg' %}" alt="Messages" class="w-5 h-5">
+            <span>Messages</span>
+          </a>
+
+          <a href="#" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Notifications">
+            <img src="{% static 'assets1/icons/heart.svg' %}" alt="Notifications" class="w-5 h-5">
+            <span>Notifications</span>
+          </a>
+
+          <a href="{% url 'newpost' %}" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="Create posts">
+            <img src="{% static 'assets1/icons/add.svg' %}" alt="Create" class="w-5 h-5">
+            <span>Create</span>
+          </a>
+
+          <a href="{% url 'profile' request.user.username %}" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100 hover:text-black p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition"aria-label="View Profile">
+            <img src="{{ user.profile.image.url }}" alt="Profile Picture" class="w-8 h-8 rounded-full object-cover">
+            <span>Profile</span>
+          </a>
+        </nav>
+      </div>
+
+      <button id="theme-toggle" class="p-2">
+        <span id="theme-icon">🌙</span>
+      </button>
+
+      <!-- Bottom: More + Logout -->
+      <div class="relative">
+        <button id="sidebar-menu-toggle" onclick="toggleSidebarMenu()" class="flex items-center space-x-2 text-gray-800 dark:text-gray-100">
+          <img src="{% static 'assets1/icons/menu.svg' %}" alt="Menu" class="w-6 h-6">
+          <span>More</span>
+        </button>
+
+        <!-- Logout Dropdown -->
+        <div id="logout-dropdown" class="hidden absolute bottom-10 left-0 w-32 bg-white dark:bg-[#1e1e1e] border dark:border-gray-700 rounded shadow z-50">
+          <!-- Change Password Button -->
+          <a href="#" class="block text-sm px-4 py-2 text-black-500 hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap">
+            Change Password
+          </a>
+
+          <form action="{% url 'logout' %}" method="post" class="block text-left w-full">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-sm px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800">
+              Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 ml-64">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  
+<!-- Theme Toggle Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggleBtn = document.getElementById('theme-toggle');
+    const iconSpan = document.getElementById('theme-icon');
+    const htmlEl = document.documentElement;
+
+    function setThemeIcon() {
+      if (iconSpan) iconSpan.textContent = htmlEl.classList.contains('dark') ? '☀️' : '🌙';
+    }
+
+    // Apply saved theme
+    if (localStorage.getItem('theme') === 'dark') {
+      htmlEl.classList.add('dark');
+    } else {
+      htmlEl.classList.remove('dark');
+    }
+
+    setThemeIcon();
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        htmlEl.classList.toggle('dark');
+        localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light');
+        setThemeIcon();
+      });
+    }
+  });
+</script>
+
+  <!-- Sidebar Menu Toggle Script -->
+  <script>
+    function toggleSidebarMenu() {
+      const dropdown = document.getElementById('logout-dropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function (e) {
+      const dropdown = document.getElementById('logout-dropdown');
+      const toggleBtn = document.getElementById('sidebar-menu-toggle');
+      if (!toggleBtn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

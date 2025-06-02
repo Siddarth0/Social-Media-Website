@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile.user.username }}'s Profile{% endblock %}
+
+{% block content %}
+
+<!-- Profile Section -->
+<section class="max-w-5xl mx-auto py-10">
+  <div class="flex flex-col md:flex-row items-center md:items-start gap-8 px-6">
+    
+<!-- Profile Image -->
+<div>
+  <img
+    src="{% if profile.image and profile.image.url %}{{ profile.image.url }}{% else %}{% static 'assets1/default-user.png' %}{% endif %}"
+    alt="Profile Image"
+    class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md"
+  >
+</div>
+
+    <!-- Profile Info -->
+    <div class="flex-1">
+      <div class="flex items-center gap-4 flex-wrap">
+        <h2 class="text-2xl font-semibold">@{{ profile.user.username }}</h2>
+
+        {% if request.user == profile.user %}
+          <a href="{% url 'editprofile' %}" class="text-sm text-white bg-gray-800 px-4 py-1 rounded hover:bg-black">Edit Profile</a>
+
+        {% elif request.user.is_authenticated %}
+          {% if follow_status %}
+            <a href="{% url 'follow' profile.user.username 0 %}" class="text-sm text-white bg-red-500 px-4 py-1 rounded hover:bg-red-600">Unfollow</a>
+          {% else %}
+            <a href="{% url 'follow' profile.user.username 1 %}" class="text-sm text-white bg-green-500 px-4 py-1 rounded hover:bg-green-600">Follow</a>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {% if profile.first_name or profile.last_name %}
+        <p class="mt-2 font-medium text-lg">{{ profile.first_name }} {{ profile.last_name }}</p>
+      {% endif %}
+
+      <div class="flex gap-6 text-sm mt-4">
+        <span><strong>{{ posts_count }}</strong> posts</span>
+        <span><strong>{{ followers_count }}</strong> followers</span>
+        <span><strong>{{ following_count }}</strong> following</span>
+      </div>
+
+      <div class="mt-4 space-y-1 text-sm">
+        {% if profile.bio %}
+          <p>◉ {{ profile.bio }}</p>
+        {% endif %}
+        {% if profile.location %}
+          <p>📍 {{ profile.location }}</p>
+        {% endif %}
+        {% if profile.url %}
+          <p>◉ <a href="{{ profile.url }}" class="text-blue-600 hover:underline">{{ profile.url }}</a></p>
+        {% endif %}
+      </div>
+
+      {% comment %} <div class="mt-6">
+        <a href="{% url 'profile' profile.user.username %}" class="text-sm font-medium px-3 py-1 border rounded hover:bg-gray-200">Posts</a>
+        {% if request.user == profile.user %}
+          <a href="{% url 'profilefavourite' profile.user.username %}" class="text-sm font-medium px-3 py-1 border rounded hover:bg-gray-200">Saved</a>
+        {% endif %}
+      </div> {% endcomment %}
+    </div>
+  </div>
+</section>
+
+<!-- Posts Gallery -->
+<section class="max-w-5xl mx-auto px-6 pb-10">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    {% for post in posts %}
+      <a href="{{ post.get_absolute_url }}" class="group block relative">
+        <img src="{{ post.picture.url }}" alt="Post image by {{ post.user.username }}" class="w-full h-60 object-cover rounded shadow-sm">
+
+        <!-- Hover Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm font-medium gap-6">
+          <div class="flex items-center gap-1">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4 20 4 22 6 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            {{ post.likes.count }}
+          </div>
+          <div class="flex items-center gap-1">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20 2H4C2.9 2 2 2.9 2 4v16l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            {{ post.comment_set.count }}
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if posts.has_other_pages %}
+    <div class="mt-8 flex justify-center space-x-2">
+      {% if posts.has_previous %}
+        <a href="?page={{ posts.previous_page_number }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&laquo; Prev</a>
+      {% endif %}
+      <span class="px-3 py-1 bg-gray-300 rounded">Page {{ posts.number }} of {{ posts.paginator.num_pages }}</span>
+      {% if posts.has_next %}
+        <a href="?page={{ posts.next_page_number }}" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next &raquo;</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

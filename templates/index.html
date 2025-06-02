@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Instagram Dashboard{% endblock %}
+
+{% block content %}
+<!-- Centered Container -->
+<div class="max-w-xl w-full ml-20 px-4">
+
+  <!-- Posts -->
+  {% for post in post_items %}
+  <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg mt-6">
+    <div class="flex items-center justify-between p-4">
+      <div class="flex items-center space-x-3">
+        <img src="{{ post.user.profile.image.url }}" class="w-10 h-10 rounded-full object-cover">
+        <div>
+          <p class="text-sm font-semibold">{{ post.user.username }}</p>
+          <p class="text-xs text-gray-500">{{ post.location|default:"" }}</p>
+        </div>
+      </div>
+      <div class="text-gray-600 dark:text-gray-300 text-xl">•••</div>
+    </div>
+
+    <img src="{{ post.picture.url }}" class="w-full max-h-[600px] object-contain bg-black">
+
+    <div class="px-4 pt-3 border-t dark:border-gray-700">
+      <div class="flex space-x-4">
+        <form method="POST" action="{% url 'like' post.id %}" class = "text-xl">
+          {% csrf_token %}
+          <button type="submit" class="bg-transparent border-none">
+            {% if post.already_liked %} ❤️ {% else %} 🤍 {% endif %}
+          </button>
+        </form>
+        
+
+        <a href="{% url 'post-details' post.id %}" class="text-xl">💬</a>
+
+      </div>
+
+      <p class="text-sm font-semibold mb-1">{{ post.likes.count }} likes</p>
+      <p class="text-sm"><span class="font-semibold">{{ post.user.username }}</span> {{ post.caption }}</p>
+      <p class="text-xs text-gray-400 mt-2">{{ post.posted|timesince }} ago</p>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-center text-gray-500 mt-10">No posts to show. Start following users or create a post.</p>
+  {% endfor %}
+
+</div>
+{% endblock %}

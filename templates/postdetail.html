@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Post Detail • Instagram{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow overflow-hidden">
+  <div class="grid md:grid-cols-2">
+    
+    <!-- Post Image -->
+    <div class="bg-black flex items-center justify-center">
+      <img src="{{ post.picture.url }}" alt="Post Image" class="max-h-[600px] w-full object-contain" />
+    </div>
+
+    <!-- Right Column: Details -->
+    <div class="flex flex-col h-[600px] relative">
+      
+      <!-- Top: User Info + Caption -->
+      <div class="p-4 border-b dark:border-gray-700 flex items-center gap-3">
+        <img src="{{ post.user.profile.image.url }}" alt="profile" class="w-10 h-10 rounded-full object-cover">
+        <div>
+          <p class="font-semibold text-sm">{{ post.user.username }}</p>
+          {% if post.location %}
+            <p class="text-xs text-gray-500">{{ post.location }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if request.user == post.user %}
+      <!-- Post options (Edit/Delete) -->
+      <div class="absolute top-4 right-4 z-20">
+        <div class="relative">
+          <button id="more-btn" onclick="toggleDropdown()" class="w-6 h-6">
+            <img src="{% static 'assets1/icons/more.svg' %}" alt="More options" class="w-full h-full" />
+          </button>
+
+          <!-- Dropdown -->
+          <div id="dropdown-menu" class="absolute right-0 mt-2 w-32 hidden bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-md shadow-lg py-1">
+            <a href="{% url 'edit-post' post.id %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+              Edit
+            </a>
+            <form action="{% url 'delete-post' post.id %}" method="POST" onsubmit="return confirm('Delete this post?');">
+              {% csrf_token %}
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800">
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Scrollable Comments -->
+      <div class="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+        <!-- Caption as first item -->
+        <div class="flex justify-between items-start gap-2">
+          <p class="text-sm text-gray-800 dark:text-gray-200 flex-1">
+            <span class="font-semibold">{{ post.user.username }}</span> {{ post.caption }}
+          </p>
+        </div>
+
+        {% for comment in comments %}
+        <div>
+          <div class="flex justify-between items-start gap-2">
+            <p class="text-sm text-gray-800 dark:text-gray-200 flex-1">
+              <span class="font-bold text-sm text-gray-900 dark:text-white ">@{{ comment.user.username }}</span> {{ comment.content }}
+            </p>
+
+            {% if comment.user == request.user %}
+            <div class="relative">
+              <button id="comment-more-btn-{{ comment.id }}" onclick="toggleCommentDropdown({{ comment.id }})">
+                <img src="{% static 'assets1/icons/more.svg' %}" alt="More Options" class="w-4 h-4">
+              </button>
+              <div id="comment-dropdown-{{ comment.id }}" class="hidden absolute right-0 mt-1 w-24 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded shadow z-10">
+                <a href="{% url 'comment-edit' comment.id %}" class="block px-3 py-1 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">Edit</a>
+                <a href="{% url 'comment-delete' comment.id %}" class="block px-3 py-1 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800">Delete</a>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          <p class="text-xs text-gray-400 mt-1">{{ comment.created_at|timesince }} ago</p>
+        </div>
+        {% empty %}
+        <p class="text-sm text-gray-400">No comments yet. Be the first to comment!</p>
+        {% endfor %}
+      </div>
+
+      <!-- Actions -->
+      <div class="px-4 pt-3 border-t dark:border-gray-700">
+        <div class="flex space-x-4">
+          <form method="POST" action="{% url 'like' post.id %}">
+            {% csrf_token %}
+            <button type="submit" class="text-xl">
+              {% if post.already_liked %} ❤️ {% else %} 🤍 {% endif %}
+            </button>
+          </form>
+          <button class="text-xl">💬</button>
+
+        </div>
+        <p class="text-sm font-semibold mt-2">{{ post.likes.count }} likes</p>
+        <p class="text-xs text-gray-400">{{ post.posted|timesince }} ago</p>
+      </div>
+
+
+      <!-- Comment Form -->
+      <form method="POST" action="{% url 'post-details' post.id %}" class="px-4 py-3 border-t dark:border-gray-700">
+        {% csrf_token %}
+        <div class="flex items-center space-x-3">
+          {{ form.content }}
+          <button type="submit" class="text-blue-500 font-semibold hover:text-blue-700">Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDropdown() {
+    document.getElementById('dropdown-menu').classList.toggle('hidden');
+  }
+
+  function toggleCommentDropdown(commentId) {
+    const dropdown = document.getElementById(`comment-dropdown-${commentId}`);
+    dropdown.classList.toggle('hidden');
+  }
+
+  document.addEventListener('click', function (e) {
+    // Close post options dropdown
+    const dropdown = document.getElementById('dropdown-menu');
+    const toggleBtn = document.getElementById('more-btn');
+    if (dropdown && toggleBtn && !toggleBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+
+    // Close all comment dropdowns
+    const openMenus = document.querySelectorAll('[id^="comment-dropdown-"]');
+    openMenus.forEach(menu => {
+      if (!menu.contains(e.target) && !e.target.closest('button[id^="comment-more-btn-"]')) {
+        menu.classList.add('hidden');
+      }
+    });
+  });
+</script>
+{% endblock %}

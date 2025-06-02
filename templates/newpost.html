@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create New Post • Instagram{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+  <h2 class="text-xl font-semibold text-center p-4 border-b dark:border-gray-700 text-gray-800 dark:text-white">
+    Create New Post
+  </h2>
+
+  <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6" id="postForm">
+    {% csrf_token %}
+
+    <!-- Drag and Drop Image Upload -->
+    <div
+      id="dropzone"
+      class="w-full h-64 border-2 border-dashed rounded-md flex items-center justify-center text-gray-400 hover:border-blue-500 dark:border-gray-600 dark:hover:border-blue-400 relative cursor-pointer"
+    >
+      <input type="file" name="picture" id="imageInput" class="absolute w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
+      <span class="text-center z-0">
+        <p class="text-sm">Drag & drop your image here, or click to select</p>
+      </span>
+    </div>
+
+    <!-- Image Preview -->
+    <div id="previewWrapper" class="hidden">
+      <img id="imagePreview" class="w-full max-h-96 object-cover rounded-md shadow border dark:border-gray-700">
+    </div>
+
+    <!-- Caption -->
+    <div>
+      <label for="id_caption" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Caption</label>
+      {{ form.caption }}
+      <p id="charCount" class="text-xs text-gray-500 mt-1">0 / 2,200</p>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex justify-end space-x-3 pt-2">
+      {% comment %} <a href="{% url 'profile' request.user.username %}" class="text-gray-600 dark:text-gray-300 hover:underline">Cancel</a> {% endcomment %}
+      <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-medium">Post</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const imageInput = document.getElementById("imageInput");
+  const imagePreview = document.getElementById("imagePreview");
+  const previewWrapper = document.getElementById("previewWrapper");
+  const charCount = document.getElementById("charCount");
+  const captionInput = document.querySelector('textarea[name="caption"]');
+
+  // Show image preview
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      imagePreview.src = url;
+      previewWrapper.classList.remove("hidden");
+    }
+  });
+
+  // Character count
+  captionInput?.addEventListener("input", () => {
+    const length = captionInput.value.length;
+    charCount.textContent = `${length} / 2,200`;
+  });
+</script>
+{% endblock %}
