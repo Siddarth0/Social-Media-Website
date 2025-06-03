@@ -15,10 +15,22 @@
 <body class="bg-gray-100">
   <div class="flex justify-center items-center min-h-screen">
     <div class="bg-white border border-gray-300 p-8 w-full max-w-sm rounded-lg shadow-sm">
+      
+      <!-- Logo -->
       <div class="flex justify-center mb-6">
         <img src="https://www.instagram.com/static/images/web/logged_out_wordmark.png/7a252de00b20.png" alt="Instagram" class="h-12">
       </div>
 
+      <!-- Error Messages -->
+      {% if form.non_field_errors %}
+        <div class="text-red-500 text-sm text-center mb-3">
+          {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Login Form -->
       <form method="post" class="space-y-3">
         {% csrf_token %}
 
@@ -45,21 +57,25 @@
           <p class="text-red-500 text-xs">{{ form.password.errors.0 }}</p>
         {% endif %}
 
+        <!-- Submit Button -->
         <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded font-semibold hover:bg-blue-600 text-sm">
           Log In
         </button>
       </form>
 
+      <!-- Divider -->
       <div class="flex items-center my-4">
         <div class="flex-grow h-px bg-gray-300"></div>
         <span class="mx-4 text-gray-500 text-sm font-medium">OR</span>
         <div class="flex-grow h-px bg-gray-300"></div>
       </div>
 
+      <!-- Forgot Password -->
       <div class="text-center mb-2">
         <a href="#" class="text-xs text-blue-500">Forgot password?</a>
       </div>
 
+      <!-- Sign up Prompt -->
       <div class="bg-white border border-gray-300 p-4 w-full max-w-sm mt-4 text-center text-sm">
         Don’t have an account?
         <a href="{% url 'signup' %}" class="text-blue-500 font-medium">Sign up</a>

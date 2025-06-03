@@ -37,24 +37,47 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+# def register(request):
+#     if request.method == "POST":
+#         form = UserRegisterForm(request.POST)
+#         if form.is_valid():
+#             new_user = form.save()
+#             username = form.cleaned_data.get('username')
+#             messages.success(request, f'Hurray your account was created!!')
+
+#             new_user = authenticate(
+#                 username=form.cleaned_data['username'], 
+#                 password=form.cleaned_data['password1']
+#             )
+#             login(request, new_user)
+#             return redirect('index')
+
+#     elif request.user.is_authenticated:
+#         return redirect('index')
+#     else:
+#         form = UserRegisterForm()
+
+#     return render(request, 'sign-up.html', {'form': form})
+
 def register(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            new_user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Hurray your account was created!!')
+            user = form.save()
+            username = form.cleaned_data['username']
+            raw_password = form.cleaned_data['password1']
+            messages.success(request, f'Hurray {username}, your account was created!')
 
-            new_user = authenticate(
-                username=form.cleaned_data['username'], 
-                password=form.cleaned_data['password1']
-            )
-            login(request, new_user)
-            return redirect('index')
-
-    elif request.user.is_authenticated:
-        return redirect('index')
+            user = authenticate(username=username, password=raw_password)
+            if user is not None:
+                login(request, user)
+                return redirect('index')
+            else:
+                messages.error(request, "Login failed. Try logging in manually.")
+                return redirect('login')
     else:
+        if request.user.is_authenticated:
+            return redirect('index')
         form = UserRegisterForm()
 
     return render(request, 'sign-up.html', {'form': form})

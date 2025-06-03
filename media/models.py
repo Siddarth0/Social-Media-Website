@@ -78,7 +78,7 @@ class Stream(models.Model):
             followers = Follow.objects.filter(following=author)
 
             streams = [
-                Stream(post=post, user=f.follower, date=post.posted, following=author)
+                Stream(post=post, user=f.follower, date=post.created_at, following=author)
                 for f in followers
             ]
             Stream.objects.bulk_create(streams)
@@ -90,7 +90,7 @@ post_save.connect(Stream.add_post, sender=Post)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="Data/profile_picture",blank=True, null=True, default="Data/default.jpg" )
+    image = models.ImageField(upload_to="profile_picture",blank=True, default="default.jpg" )
     first_name = models.CharField(max_length=200, blank=True, null=True)
     last_name = models.CharField(max_length=200, blank=True, null=True)
     bio = models.CharField(max_length=200, blank=True, null=True)
