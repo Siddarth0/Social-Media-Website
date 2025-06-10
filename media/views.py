@@ -41,44 +41,42 @@ def index(request):
 #     if request.method == "POST":
 #         form = UserRegisterForm(request.POST)
 #         if form.is_valid():
-#             new_user = form.save()
-#             username = form.cleaned_data.get('username')
-#             messages.success(request, f'Hurray your account was created!!')
+#             user = form.save()
+#             username = form.cleaned_data['username']
+#             raw_password = form.cleaned_data['password1']
+#             messages.success(request, f'Hurray {username}, your account was created!')
 
-#             new_user = authenticate(
-#                 username=form.cleaned_data['username'], 
-#                 password=form.cleaned_data['password1']
-#             )
-#             login(request, new_user)
-#             return redirect('index')
-
-#     elif request.user.is_authenticated:
-#         return redirect('index')
+#             user = authenticate(username=username, password=raw_password)
+#             if user is not None:
+#                 login(request, user)
+#                 return redirect('index')
+#             else:
+#                 messages.error(request, "Login failed. Try logging in manually.")
+#                 return redirect('login')
 #     else:
+#         if request.user.is_authenticated:
+#             return redirect('index')
 #         form = UserRegisterForm()
 
 #     return render(request, 'sign-up.html', {'form': form})
 
-def register(request):
-    if request.method == "POST":
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data['username']
-            raw_password = form.cleaned_data['password1']
-            messages.success(request, f'Hurray {username}, your account was created!')
 
-            user = authenticate(username=username, password=raw_password)
-            if user is not None:
-                login(request, user)
-                return redirect('index')
-            else:
-                messages.error(request, "Login failed. Try logging in manually.")
-                return redirect('login')
-    else:
-        if request.user.is_authenticated:
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    form = UserRegisterForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        raw_password = form.cleaned_data['password1']
+        user = authenticate(username=user.username, password=raw_password)
+        
+        if user:
+            login(request, user)
+            messages.success(request, f'Hurray {user.username}, your account was created!')
             return redirect('index')
-        form = UserRegisterForm()
+        messages.error(request, "Login failed. Try logging in manually.")
+        return redirect('login')
 
     return render(request, 'sign-up.html', {'form': form})
 
@@ -241,13 +239,12 @@ def follow(request, username, option):
 
 @login_required
 def UserProfile(request, username):
-    Profile.objects.get_or_create(user=request.user)
+
 
     user = get_object_or_404(User, username=username)
     profile = get_object_or_404(Profile, user=user)
     url_name = resolve(request.path).url_name
 
-    # Fix field name from 'posted' to 'created_at'
     if url_name == 'profile':
         posts = Post.objects.filter(user=user).order_by('-created_at')
     else:
