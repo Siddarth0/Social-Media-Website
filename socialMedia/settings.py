@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-bs$(@@9fabh^8slcdt0-%$k5xvnvsay9x6wc_zf%$dob14_&ca
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://socialmedia-6jqe.onrender.com','localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['socialmedia-6jqe.onrender.com', 'localhost', '127.0.0.1']
+
+CSRF_TRUSTED_ORIGINS = ['https://socialmedia-6jqe.onrender.com']
 
 
 # Application definition
@@ -120,7 +122,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
