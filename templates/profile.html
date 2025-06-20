@@ -28,9 +28,9 @@
 
         {% elif request.user.is_authenticated %}
           {% if follow_status %}
-            <a href="{% url 'follow' profile.user.username 0 %}" class="text-sm text-white bg-red-500 px-4 py-1 rounded hover:bg-red-600">Unfollow</a>
+            <a href="{% url 'follow' profile.user.username %}" class="text-sm text-white bg-red-500 px-4 py-1 rounded hover:bg-red-600">Unfollow</a>
           {% else %}
-            <a href="{% url 'follow' profile.user.username 1 %}" class="text-sm text-white bg-green-500 px-4 py-1 rounded hover:bg-green-600">Follow</a>
+            <a href="{% url 'follow' profile.user.username %}" class="text-sm text-white bg-green-500 px-4 py-1 rounded hover:bg-green-600">Follow</a>
           {% endif %}
         {% endif %}
       </div>

@@ -9,7 +9,8 @@ from PIL import Image
 
 # uploading user files to a specific directory
 def user_directory_path(instance, filename):
-    return 'user_{0}/{1}'.format(instance.user.id, filename)
+    return 'user_{0}/model/1/{1}'.format(instance.user.id, filename) 
+#make this function reusable in all user files
 
 
 class Post(models.Model):

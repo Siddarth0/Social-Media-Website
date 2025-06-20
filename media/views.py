@@ -7,7 +7,6 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib import messages
-from django.http import HttpResponseRedirect
 from django.urls import reverse, resolve
 from django.db import transaction
 
@@ -210,31 +209,58 @@ def comment_delete(request, comment_id):
     return redirect('post-details', post_id=post_id)
 
 
+# @login_required #change logic of follow/unfollow
+# def follow(request, username, option):
+#     user = request.user
+#     following = get_object_or_404(User, username=username)
+
+#     if user == following:
+#         # Optional: Prevent users from following themselves
+#         return redirect('profile', username=username)
+
+#     if option == 0:
+#         # Unfollow
+#         Follow.objects.filter(follower=user, following=following).delete()
+#         Stream.objects.filter(user=user, following=following).delete()
+#     else:
+#         # Follow
+#         follow_obj, created = Follow.objects.get_or_create(follower=user, following=following)
+#         if created:
+#             posts = Post.objects.filter(user=following).order_by('-created_at')[:25]
+#             with transaction.atomic():
+#                 Stream.objects.bulk_create([
+#                     Stream(post=post, user=user, date=post.created_at, following=following)
+#                     for post in posts
+#                 ])
+
+#     return redirect('profile', username=username)
+
 @login_required
-def follow(request, username, option):
+def follow(request, username):
     user = request.user
     following = get_object_or_404(User, username=username)
 
     if user == following:
-        # Optional: Prevent users from following themselves
-        return redirect('profile', username=username)
+        return redirect('profile', username=username)  # Prevent following self
 
-    if option == 0:
+    follow_instance = Follow.objects.filter(follower=user, following=following).first()
+
+    if follow_instance:
         # Unfollow
-        Follow.objects.filter(follower=user, following=following).delete()
+        follow_instance.delete()
         Stream.objects.filter(user=user, following=following).delete()
     else:
         # Follow
-        follow_obj, created = Follow.objects.get_or_create(follower=user, following=following)
-        if created:
-            posts = Post.objects.filter(user=following).order_by('-created_at')[:25]
-            with transaction.atomic():
-                Stream.objects.bulk_create([
-                    Stream(post=post, user=user, date=post.created_at, following=following)
-                    for post in posts
-                ])
+        Follow.objects.create(follower=user, following=following)
+        posts = Post.objects.filter(user=following).order_by('-created_at')[:25]
 
-    return HttpResponseRedirect(reverse('profile', args=[username]))
+        with transaction.atomic():
+            Stream.objects.bulk_create([
+                Stream(post=post, user=user, date=post.created_at, following=following)
+                for post in posts
+            ])
+
+    return redirect('profile', username=username)
 
 
 @login_required
